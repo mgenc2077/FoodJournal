@@ -19,17 +19,23 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - uses: gradle/actions/setup-gradle@v6
+      - name: Decode keystore
+        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > app/release.keystore
 
       - name: Build release APK
-        run: ./gradlew assembleRelease --build-cache
+        env:
+          KEYSTORE_FILE: release.keystore
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: ./gradlew assembleRelease
 
       - name: Extract version from tag
         id: version
         run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> "$GITHUB_OUTPUT"
 
       - name: Rename APK
-        run: mv app/build/outputs/apk/release/app-release-unsigned.apk food-journal-${{ steps.version.outputs.VERSION }}.apk
+        run: mv app/build/outputs/apk/release/app-release.apk food-journal-${{ steps.version.outputs.VERSION }}.apk
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v3
