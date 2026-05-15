@@ -34,6 +34,23 @@ jobs:
         id: version
         run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> "$GITHUB_OUTPUT"
 
+      - name: Read release notes
+        id: notes
+        run: |
+          FILE="docs/release-notes/v${{ steps.version.outputs.VERSION }}.md"
+          if [ -f "$FILE" ]; then
+            echo "Found release notes: $FILE"
+            {
+              echo "BODY<<EOF"
+              cat "$FILE"
+              echo ""
+              echo "EOF"
+            } >> "$GITHUB_OUTPUT"
+          else
+            echo "No release notes found at $FILE"
+            echo "BODY=No release notes available." >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Rename APK
         run: mv app/build/outputs/apk/release/app-release.apk food-journal-${{ steps.version.outputs.VERSION }}.apk
 
@@ -41,5 +58,5 @@ jobs:
         uses: softprops/action-gh-release@v3
         with:
           name: Food Journal v${{ steps.version.outputs.VERSION }}
-          generate_release_notes: true
+          body: ${{ steps.notes.outputs.BODY }}
           files: food-journal-${{ steps.version.outputs.VERSION }}.apk
