@@ -6,24 +6,33 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
+import com.mgenc.foodjournal.screen.AddEditEntryScreen
+import com.mgenc.foodjournal.screen.DailyJournalScreen
+import com.mgenc.foodjournal.screen.TimelineScreen
 import com.mgenc.foodjournal.ui.theme.FoodJournalTheme
+import com.mgenc.foodjournal.viewmodel.AddEditEntryViewModel
+import com.mgenc.foodjournal.viewmodel.DailyJournalViewModel
+import com.mgenc.foodjournal.viewmodel.TimelineViewModel
 import kotlinx.serialization.Serializable
+import java.time.LocalDate
 
 @Serializable
-data object First : NavKey
+data class DailyJournal(val epochDay: Long = LocalDate.now().toEpochDay()) : NavKey
 
 @Serializable
-data object Second : NavKey
+data class AddEntry(val epochDay: Long) : NavKey
+
+@Serializable
+data class EditEntry(val entryId: Long) : NavKey
+
+@Serializable
+data object Timeline : NavKey
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,30 +40,48 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             FoodJournalTheme {
-                val backStack = rememberNavBackStack(First)
-                Scaffold(
-                    topBar = {
-                        TopAppBar(title = { Text("Food Journal") })
-                    }
-                ) { innerPadding ->
-                    NavDisplay(
-                        backStack = backStack,
-                        modifier = Modifier.padding(innerPadding),
-                        onBack = { backStack.removeLastOrNull() },
-                        entryProvider = entryProvider {
-                            entry<First> {
-                                FirstScreen(
-                                    onNext = { backStack.add(Second) }
-                                )
-                            }
-                            entry<Second> {
-                                SecondScreen(
-                                    onPrevious = { backStack.removeLastOrNull() }
-                                )
-                            }
+                val backStack = rememberNavBackStack(DailyJournal())
+                NavDisplay(
+                    backStack = backStack,
+                    onBack = { backStack.removeLastOrNull() },
+                    entryProvider = entryProvider {
+                        entry<DailyJournal> { key ->
+                            val vm: DailyJournalViewModel = viewModel()
+                            DailyJournalScreen(
+                                viewModel = vm,
+                                onAddEntry = { backStack.add(AddEntry(it)) },
+                                onEditEntry = { backStack.add(EditEntry(it)) },
+                                onTimeline = { backStack.add(Timeline) },
+                            )
                         }
-                    )
-                }
+                        entry<AddEntry> { key ->
+                            val vm: AddEditEntryViewModel = viewModel()
+                            AddEditEntryScreen(
+                                viewModel = vm,
+                                epochDay = key.epochDay,
+                                entryId = null,
+                                onBack = { backStack.removeLastOrNull() },
+                            )
+                        }
+                        entry<EditEntry> { key ->
+                            val vm: AddEditEntryViewModel = viewModel()
+                            AddEditEntryScreen(
+                                viewModel = vm,
+                                epochDay = 0L,
+                                entryId = key.entryId,
+                                onBack = { backStack.removeLastOrNull() },
+                            )
+                        }
+                        entry<Timeline> {
+                            val vm: TimelineViewModel = viewModel()
+                            TimelineScreen(
+                                viewModel = vm,
+                                onBack = { backStack.removeLastOrNull() },
+                                onEditEntry = { backStack.add(EditEntry(it)) },
+                            )
+                        }
+                    },
+                )
             }
         }
     }
