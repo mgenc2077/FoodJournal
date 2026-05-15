@@ -59,6 +59,7 @@ fun DailyJournalScreen(
     onAddEntry: (Long) -> Unit,
     onEditEntry: (Long) -> Unit,
     onTimeline: () -> Unit,
+    onRecipes: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val currentDay by viewModel.currentDay.collectAsState()
@@ -86,6 +87,15 @@ fun DailyJournalScreen(
                     onClick = {
                         scope.launch { drawerState.close() }
                         onTimeline()
+                    },
+                    modifier = Modifier.padding(horizontal = 12.dp),
+                )
+                NavigationDrawerItem(
+                    label = { Text("Recipes") },
+                    selected = false,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        onRecipes()
                     },
                     modifier = Modifier.padding(horizontal = 12.dp),
                 )

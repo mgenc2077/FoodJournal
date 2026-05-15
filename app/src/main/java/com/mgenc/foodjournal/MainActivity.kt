@@ -17,10 +17,14 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import com.mgenc.foodjournal.screen.AddEditEntryScreen
 import com.mgenc.foodjournal.screen.DailyJournalScreen
+import com.mgenc.foodjournal.screen.EditRecipeScreen
+import com.mgenc.foodjournal.screen.RecipeListScreen
 import com.mgenc.foodjournal.screen.TimelineScreen
 import com.mgenc.foodjournal.ui.theme.FoodJournalTheme
 import com.mgenc.foodjournal.viewmodel.AddEditEntryViewModel
 import com.mgenc.foodjournal.viewmodel.DailyJournalViewModel
+import com.mgenc.foodjournal.viewmodel.EditRecipeViewModel
+import com.mgenc.foodjournal.viewmodel.RecipeListViewModel
 import com.mgenc.foodjournal.viewmodel.TimelineViewModel
 import kotlinx.serialization.Serializable
 import java.time.LocalDate
@@ -36,6 +40,12 @@ data class EditEntry(val entryId: Long) : NavKey
 
 @Serializable
 data object Timeline : NavKey
+
+@Serializable
+data object Recipes : NavKey
+
+@Serializable
+data class EditRecipe(val recipeId: Long? = null) : NavKey
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -58,6 +68,7 @@ class MainActivity : ComponentActivity() {
                                 onAddEntry = { backStack.add(AddEntry(it)) },
                                 onEditEntry = { backStack.add(EditEntry(it)) },
                                 onTimeline = { backStack.add(Timeline) },
+                                onRecipes = { backStack.add(Recipes) },
                             )
                         }
                         entry<AddEntry> { key ->
@@ -84,6 +95,23 @@ class MainActivity : ComponentActivity() {
                                 viewModel = vm,
                                 onBack = { backStack.removeLastOrNull() },
                                 onEditEntry = { backStack.add(EditEntry(it)) },
+                            )
+                        }
+                        entry<Recipes> {
+                            val vm: RecipeListViewModel = viewModel()
+                            RecipeListScreen(
+                                viewModel = vm,
+                                onBack = { backStack.removeLastOrNull() },
+                                onAddRecipe = { backStack.add(EditRecipe()) },
+                                onEditRecipe = { backStack.add(EditRecipe(it)) },
+                            )
+                        }
+                        entry<EditRecipe> { key ->
+                            val vm: EditRecipeViewModel = viewModel()
+                            EditRecipeScreen(
+                                viewModel = vm,
+                                recipeId = key.recipeId,
+                                onBack = { backStack.removeLastOrNull() },
                             )
                         }
                     },

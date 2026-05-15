@@ -19,7 +19,7 @@ Data layer: Room (SQLite) via `FoodJournalApp` Application class.
 
 - **Jetpack Compose** with Material 3 dynamic theming (Compose BOM `2026.03.00`).
 - **Navigation 3** (`navigation3-runtime` + `navigation3-ui`) — routes are `@Serializable` data objects/classes implementing `NavKey`. Use `rememberNavBackStack`, `NavDisplay`, and `entryProvider` DSL.
-- **Room** database (version 2) with KSP (`2.3.8`) for annotation processing. Entity + DAO + migrations in `data/Database.kt`. Schema changes require a `Migration` in `FoodJournalApp.kt`.
+- **Room** database (version 3) with KSP (`2.3.8`) for annotation processing. Entities + DAOs + migrations in `data/Database.kt`. Schema changes require a `Migration` in `FoodJournalApp.kt`.
 - NavDisplay transitions are disabled (`EnterTransition.None togetherWith ExitTransition.None`) — no white flash on navigation.
 - **AGP 9.2.1** has built-in Kotlin — do NOT apply `org.jetbrains.kotlin.android`. Apply `org.jetbrains.kotlin.plugin.compose`, `org.jetbrains.kotlin.plugin.serialization`, and `com.google.devtools.ksp` only.
 - No `kotlinOptions` block in AGP 9.x — JVM target follows `compileOptions`.
@@ -31,10 +31,12 @@ Data layer: Room (SQLite) via `FoodJournalApp` Application class.
 
 ## Screen flow
 
-- **DailyJournal** (start) → hamburger drawer with "Today" and "Timeline"
-- **AddEntry** ← FAB on DailyJournal
+- **DailyJournal** (start) → hamburger drawer with "Today", "Timeline", and "Recipes"
+- **AddEntry** ← FAB on DailyJournal; includes recipe dropdown that pre-fills name + notes
 - **EditEntry** ← tap any entry row (from DailyJournal or Timeline)
 - **Timeline** ← drawer item; scrollable list grouped by date then meal type
+- **Recipes** ← drawer item; list of recipe templates
+- **EditRecipe** ← tap a recipe or FAB on Recipes screen
 
 ## Key paths
 
@@ -46,6 +48,6 @@ Data layer: Room (SQLite) via `FoodJournalApp` Application class.
 | Entity + DAO + DB | `data/Database.kt` |
 | Activity + routes | `MainActivity.kt` |
 | Compose theme | `ui/theme/Theme.kt` |
-| Screens | `screen/DailyJournalScreen.kt`, `AddEditEntryScreen.kt`, `TimelineScreen.kt` |
-| ViewModels | `viewmodel/DailyJournalViewModel.kt`, `AddEditEntryViewModel.kt`, `TimelineViewModel.kt` |
+| Screens | `screen/DailyJournalScreen.kt`, `AddEditEntryScreen.kt`, `TimelineScreen.kt`, `RecipeListScreen.kt`, `EditRecipeScreen.kt` |
+| ViewModels | `viewmodel/DailyJournalViewModel.kt`, `AddEditEntryViewModel.kt`, `TimelineViewModel.kt`, `RecipeListViewModel.kt`, `EditRecipeViewModel.kt` |
 | Strings | `app/src/main/res/values/strings.xml` |

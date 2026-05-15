@@ -2,6 +2,8 @@
 
 package com.mgenc.foodjournal.screen
 
+import android.app.Application
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -14,7 +16,11 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -28,10 +34,27 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import com.mgenc.foodjournal.FoodJournalApp
 import com.mgenc.foodjournal.data.MealType
+import com.mgenc.foodjournal.data.Recipe
 import com.mgenc.foodjournal.viewmodel.AddEditEntryViewModel
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
+
+private class RecipeDropdownViewModel(app: Application) : AndroidViewModel(app) {
+    val recipes: StateFlow<List<Recipe>> =
+        (app as FoodJournalApp).database.recipeDao().getAll()
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+}
 
 @Composable
 fun AddEditEntryScreen(
@@ -45,6 +68,11 @@ fun AddEditEntryScreen(
     val mealType by viewModel.mealType.collectAsState()
     val notes by viewModel.notes.collectAsState()
     val isEdit = entryId != null
+
+    val context = LocalContext.current
+    val recipeVm = remember { RecipeDropdownViewModel(context.applicationContext as Application) }
+    val recipes by recipeVm.recipes.collectAsState()
+    var recipeExpanded by remember { mutableStateOf(false) }
 
     if (entryId != null) {
         LaunchedEffect(entryId) { viewModel.loadEntry(entryId) }
@@ -89,6 +117,41 @@ fun AddEditEntryScreen(
                 .padding(16.dp)
                 .verticalScroll(rememberScrollState()),
         ) {
+            if (recipes.isNotEmpty() && entryId == null) {
+                ExposedDropdownMenuBox(
+                    expanded = recipeExpanded,
+                    onExpandedChange = { recipeExpanded = it },
+                ) {
+                    OutlinedTextField(
+                        value = "",
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Use recipe (optional)") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = recipeExpanded) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
+                    )
+                    ExposedDropdownMenu(
+                        expanded = recipeExpanded,
+                        onDismissRequest = { recipeExpanded = false },
+                    ) {
+                        for (recipe in recipes) {
+                            DropdownMenuItem(
+                                text = { Text(recipe.name) },
+                                onClick = {
+                                    viewModel.setFoodName(recipe.name)
+                                    if (!recipe.notes.isNullOrBlank()) {
+                                        viewModel.setNotes(recipe.notes)
+                                    }
+                                    recipeExpanded = false
+                                },
+                            )
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+            }
             OutlinedTextField(
                 value = foodName,
                 onValueChange = { viewModel.setFoodName(it) },
@@ -99,7 +162,7 @@ fun AddEditEntryScreen(
             Spacer(modifier = Modifier.height(16.dp))
             Text("Meal", style = MaterialTheme.typography.labelLarge)
             Spacer(modifier = Modifier.height(8.dp))
-            Row(horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 for (type in MealType.entries) {
                     FilterChip(
                         selected = mealType == type.name,

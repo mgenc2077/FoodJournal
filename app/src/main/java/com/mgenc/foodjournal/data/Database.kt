@@ -55,7 +55,33 @@ interface FoodEntryDao {
     }
 }
 
-@Database(entities = [FoodEntry::class], version = 2)
+@Entity(tableName = "recipes")
+data class Recipe(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val name: String,
+    val notes: String? = null,
+)
+
+@Dao
+interface RecipeDao {
+    @Query("SELECT * FROM recipes ORDER BY name")
+    fun getAll(): Flow<List<Recipe>>
+
+    @Query("SELECT * FROM recipes WHERE id = :id")
+    suspend fun getById(id: Long): Recipe?
+
+    @Insert
+    suspend fun insert(recipe: Recipe): Long
+
+    @Update
+    suspend fun update(recipe: Recipe)
+
+    @Delete
+    suspend fun delete(recipe: Recipe)
+}
+
+@Database(entities = [FoodEntry::class, Recipe::class], version = 3)
 abstract class FoodJournalDatabase : RoomDatabase() {
     abstract fun foodEntryDao(): FoodEntryDao
+    abstract fun recipeDao(): RecipeDao
 }

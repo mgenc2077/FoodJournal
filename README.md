@@ -9,6 +9,7 @@ I wanted to use an app for tracking what you eat each day, but found all the ava
 - **Notes** — optional free-text notes on each entry
 - **Timeline** — scrollable view of all entries grouped by date and meal type
 - **Reorder** — move entries up or down within a meal group
+- **Recipes** — save recipe templates with ingredient notes; quick-fill new entries from a recipe dropdown
 - **Edit & delete** — tap to edit, delete button on every entry
 - **Material You** — dynamic color theming that adapts to your wallpaper
 
@@ -29,9 +30,10 @@ Pre-built APKs are available on the [Releases page](../../releases). Each releas
 | Screen | Purpose |
 |---|---|
 | Daily Journal | Main screen; entries for one day, grouped by meal, with day navigation and FAB to add |
-| Add Entry | Form to create a new entry (food name, meal type, notes) |
+| Add Entry | Form to create a new entry (food name, meal type, notes); recipe dropdown pre-fills from templates |
 | Edit Entry | Edit an existing entry or delete it |
 | Timeline | All entries across all days, grouped by date then meal type |
+| Recipes | Manage recipe templates (name + ingredient notes) |
 
 ## Local development
 
