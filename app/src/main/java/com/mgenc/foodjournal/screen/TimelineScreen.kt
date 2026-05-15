@@ -31,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.mgenc.foodjournal.data.FoodEntry
+import com.mgenc.foodjournal.data.MealType
 import com.mgenc.foodjournal.viewmodel.TimelineViewModel
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -81,11 +82,23 @@ fun TimelineScreen(
                             modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
                         )
                     }
-                    items(dayEntries, key = { it.id }) { entry ->
-                        TimelineEntryRow(
-                            entry = entry,
-                            onClick = { onEditEntry(entry.id) },
-                        )
+                    val byMeal = dayEntries.groupBy { it.mealType }
+                    for (mealType in MealType.entries) {
+                        val mealEntries = byMeal[mealType.name] ?: continue
+                        item(key = "meal-$epochDay-${mealType.name}") {
+                            Text(
+                                text = mealType.name.lowercase().replaceFirstChar { it.uppercase() },
+                                style = MaterialTheme.typography.titleSmall,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                            )
+                        }
+                        items(mealEntries, key = { it.id }) { entry ->
+                            TimelineEntryRow(
+                                entry = entry,
+                                onClick = { onEditEntry(entry.id) },
+                            )
+                        }
                     }
                 }
             }
@@ -118,22 +131,14 @@ private fun TimelineEntryRow(
                     text = entry.foodName,
                     style = MaterialTheme.typography.bodyLarge,
                 )
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                if (!entry.notes.isNullOrBlank()) {
                     Text(
-                        text = entry.mealType.lowercase().replaceFirstChar { it.uppercase() },
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.primary,
+                        text = entry.notes,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                     )
-                    if (!entry.notes.isNullOrBlank()) {
-                        Text(
-                            text = entry.notes,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.weight(1f),
-                        )
-                    }
                 }
             }
         }
