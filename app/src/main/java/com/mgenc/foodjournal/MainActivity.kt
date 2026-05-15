@@ -19,12 +19,14 @@ import com.mgenc.foodjournal.screen.AddEditEntryScreen
 import com.mgenc.foodjournal.screen.DailyJournalScreen
 import com.mgenc.foodjournal.screen.EditRecipeScreen
 import com.mgenc.foodjournal.screen.RecipeListScreen
+import com.mgenc.foodjournal.screen.SettingsScreen
 import com.mgenc.foodjournal.screen.TimelineScreen
 import com.mgenc.foodjournal.ui.theme.FoodJournalTheme
 import com.mgenc.foodjournal.viewmodel.AddEditEntryViewModel
 import com.mgenc.foodjournal.viewmodel.DailyJournalViewModel
 import com.mgenc.foodjournal.viewmodel.EditRecipeViewModel
 import com.mgenc.foodjournal.viewmodel.RecipeListViewModel
+import com.mgenc.foodjournal.viewmodel.SettingsViewModel
 import com.mgenc.foodjournal.viewmodel.TimelineViewModel
 import kotlinx.serialization.Serializable
 import java.time.LocalDate
@@ -46,6 +48,9 @@ data object Recipes : NavKey
 
 @Serializable
 data class EditRecipe(val recipeId: Long? = null) : NavKey
+
+@Serializable
+data object Settings : NavKey
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -69,6 +74,7 @@ class MainActivity : ComponentActivity() {
                                 onEditEntry = { backStack.add(EditEntry(it)) },
                                 onTimeline = { backStack.add(Timeline) },
                                 onRecipes = { backStack.add(Recipes) },
+                                onSettings = { backStack.add(Settings) },
                             )
                         }
                         entry<AddEntry> { key ->
@@ -111,6 +117,13 @@ class MainActivity : ComponentActivity() {
                             EditRecipeScreen(
                                 viewModel = vm,
                                 recipeId = key.recipeId,
+                                onBack = { backStack.removeLastOrNull() },
+                            )
+                        }
+                        entry<Settings> {
+                            val vm: SettingsViewModel = viewModel()
+                            SettingsScreen(
+                                viewModel = vm,
                                 onBack = { backStack.removeLastOrNull() },
                             )
                         }

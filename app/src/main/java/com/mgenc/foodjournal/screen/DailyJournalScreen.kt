@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DrawerValue
@@ -60,6 +61,7 @@ fun DailyJournalScreen(
     onEditEntry: (Long) -> Unit,
     onTimeline: () -> Unit,
     onRecipes: () -> Unit,
+    onSettings: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val currentDay by viewModel.currentDay.collectAsState()
@@ -96,6 +98,16 @@ fun DailyJournalScreen(
                     onClick = {
                         scope.launch { drawerState.close() }
                         onRecipes()
+                    },
+                    modifier = Modifier.padding(horizontal = 12.dp),
+                )
+                NavigationDrawerItem(
+                    icon = { Icon(Icons.Default.Settings, contentDescription = null) },
+                    label = { Text("Settings") },
+                    selected = false,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        onSettings()
                     },
                     modifier = Modifier.padding(horizontal = 12.dp),
                 )
