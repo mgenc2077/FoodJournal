@@ -112,24 +112,23 @@ fun DailyJournalScreen(
             },
             modifier = modifier,
         ) { innerPadding ->
-            if (entries.isEmpty()) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding)
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Text("No entries for this day", style = MaterialTheme.typography.bodyLarge)
-                }
-            } else {
-                Column(modifier = Modifier.padding(innerPadding)) {
-                    DayNavigation(
-                        currentDay = currentDay,
-                        onPrev = { viewModel.prevDay() },
-                        onNext = { viewModel.nextDay() },
-                    )
+            Column(modifier = Modifier.padding(innerPadding)) {
+                DayNavigation(
+                    currentDay = currentDay,
+                    onPrev = { viewModel.prevDay() },
+                    onNext = { viewModel.nextDay() },
+                )
+                if (entries.isEmpty()) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        Text("No entries for this day", style = MaterialTheme.typography.bodyLarge)
+                    }
+                } else {
                     LazyColumn(modifier = Modifier.fillMaxSize()) {
                         val grouped = entries.groupBy { it.mealType }
                         for (mealType in MealType.entries) {
