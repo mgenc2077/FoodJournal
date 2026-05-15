@@ -17,6 +17,9 @@ class RecipeListViewModel(app: Application) : AndroidViewModel(app) {
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     fun delete(recipe: Recipe) {
-        viewModelScope.launch { dao.delete(recipe) }
+        viewModelScope.launch {
+            val now = System.currentTimeMillis()
+            dao.update(recipe.copy(deletedAt = now, updatedAt = now))
+        }
     }
 }

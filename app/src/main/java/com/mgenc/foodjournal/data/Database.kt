@@ -2,7 +2,6 @@ package com.mgenc.foodjournal.data
 
 import androidx.room.Dao
 import androidx.room.Database
-import androidx.room.Delete
 import androidx.room.Entity
 import androidx.room.Insert
 import androidx.room.PrimaryKey
@@ -26,14 +25,15 @@ data class FoodEntry(
     val createdAt: Long = System.currentTimeMillis(),
     val displayOrder: Int = 0,
     val updatedAt: Long = System.currentTimeMillis(),
+    val deletedAt: Long? = null,
 )
 
 @Dao
 interface FoodEntryDao {
-    @Query("SELECT * FROM food_entries WHERE epochDay = :epochDay ORDER BY mealType, displayOrder")
+    @Query("SELECT * FROM food_entries WHERE epochDay = :epochDay AND deletedAt IS NULL ORDER BY mealType, displayOrder")
     fun getByDate(epochDay: Long): Flow<List<FoodEntry>>
 
-    @Query("SELECT * FROM food_entries ORDER BY epochDay DESC, mealType, displayOrder")
+    @Query("SELECT * FROM food_entries WHERE deletedAt IS NULL ORDER BY epochDay DESC, mealType, displayOrder")
     fun getAll(): Flow<List<FoodEntry>>
 
     @Query("SELECT * FROM food_entries WHERE id = :id")
@@ -48,8 +48,8 @@ interface FoodEntryDao {
     @Update
     suspend fun update(entry: FoodEntry)
 
-    @Delete
-    suspend fun delete(entry: FoodEntry)
+    @Query("SELECT COUNT(*) FROM food_entries")
+    suspend fun count(): Int
 
     @Transaction
     suspend fun updateDisplayOrders(entries: List<FoodEntry>) {
@@ -58,9 +58,6 @@ interface FoodEntryDao {
             update(entry.copy(displayOrder = index, updatedAt = now))
         }
     }
-
-    @Query("SELECT COUNT(*) FROM food_entries")
-    suspend fun count(): Int
 
     @Transaction
     suspend fun upsertAll(entries: List<FoodEntry>) {
@@ -81,11 +78,12 @@ data class Recipe(
     val name: String,
     val notes: String? = null,
     val updatedAt: Long = System.currentTimeMillis(),
+    val deletedAt: Long? = null,
 )
 
 @Dao
 interface RecipeDao {
-    @Query("SELECT * FROM recipes ORDER BY name")
+    @Query("SELECT * FROM recipes WHERE deletedAt IS NULL ORDER BY name")
     fun getAll(): Flow<List<Recipe>>
 
     @Query("SELECT * FROM recipes WHERE id = :id")
@@ -99,9 +97,6 @@ interface RecipeDao {
 
     @Update
     suspend fun update(recipe: Recipe)
-
-    @Delete
-    suspend fun delete(recipe: Recipe)
 
     @Query("SELECT COUNT(*) FROM recipes")
     suspend fun count(): Int
@@ -119,7 +114,7 @@ interface RecipeDao {
     }
 }
 
-@Database(entities = [FoodEntry::class, Recipe::class], version = 4)
+@Database(entities = [FoodEntry::class, Recipe::class], version = 5)
 abstract class FoodJournalDatabase : RoomDatabase() {
     abstract fun foodEntryDao(): FoodEntryDao
     abstract fun recipeDao(): RecipeDao

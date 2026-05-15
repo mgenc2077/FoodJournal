@@ -68,7 +68,8 @@ class AddEditEntryViewModel(app: Application) : AndroidViewModel(app) {
     fun deleteEntry(entryId: String) {
         viewModelScope.launch {
             val entry = dao.getById(entryId) ?: return@launch
-            dao.delete(entry)
+            val now = System.currentTimeMillis()
+            dao.update(entry.copy(deletedAt = now, updatedAt = now))
         }
     }
 }

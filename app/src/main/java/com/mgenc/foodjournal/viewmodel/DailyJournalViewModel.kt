@@ -36,7 +36,10 @@ class DailyJournalViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun deleteEntry(entry: FoodEntry) {
-        viewModelScope.launch { dao.delete(entry) }
+        viewModelScope.launch {
+            val now = System.currentTimeMillis()
+            dao.update(entry.copy(deletedAt = now, updatedAt = now))
+        }
     }
 
     fun moveEntry(entry: FoodEntry, direction: Int) {

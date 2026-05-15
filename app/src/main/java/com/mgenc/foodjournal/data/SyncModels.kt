@@ -13,6 +13,7 @@ data class SyncEntry(
     @SerialName("created_at") val createdAt: Long,
     @SerialName("display_order") val displayOrder: Int,
     @SerialName("updated_at") val updatedAt: Long,
+    @SerialName("deleted_at") val deletedAt: Long? = null,
 )
 
 @Serializable
@@ -21,6 +22,7 @@ data class SyncRecipe(
     @SerialName("name") val name: String,
     @SerialName("notes") val notes: String? = null,
     @SerialName("updated_at") val updatedAt: Long,
+    @SerialName("deleted_at") val deletedAt: Long? = null,
 )
 
 @Serializable
@@ -49,10 +51,10 @@ data class ErrorResponse(
     @SerialName("rebuild_url") val rebuildUrl: String? = null,
 )
 
-fun FoodEntry.toSync() = SyncEntry(id, epochDay, foodName, mealType, notes, createdAt, displayOrder, updatedAt)
+fun FoodEntry.toSync() = SyncEntry(id, epochDay, foodName, mealType, notes, createdAt, displayOrder, updatedAt, deletedAt)
 
-fun Recipe.toSync() = SyncRecipe(id, name, notes, updatedAt)
+fun Recipe.toSync() = SyncRecipe(id, name, notes, updatedAt, deletedAt)
 
-fun SyncEntry.toEntity() = FoodEntry(id, epochDay, foodName, mealType, notes, createdAt, displayOrder, updatedAt)
+fun SyncEntry.toEntity() = FoodEntry(id, epochDay, foodName, mealType, notes, createdAt, displayOrder, updatedAt, deletedAt)
 
-fun SyncRecipe.toEntity() = Recipe(id, name, notes, updatedAt)
+fun SyncRecipe.toEntity() = Recipe(id, name, notes, updatedAt, deletedAt)

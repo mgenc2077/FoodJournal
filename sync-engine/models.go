@@ -9,6 +9,7 @@ type FoodEntry struct {
 	CreatedAt    int64   `json:"created_at"`
 	DisplayOrder int     `json:"display_order"`
 	UpdatedAt    int64   `json:"updated_at"`
+	DeletedAt    *int64  `json:"deleted_at"`
 }
 
 type Recipe struct {
@@ -16,6 +17,7 @@ type Recipe struct {
 	Name      string  `json:"name"`
 	Notes     *string `json:"notes"`
 	UpdatedAt int64   `json:"updated_at"`
+	DeletedAt *int64  `json:"deleted_at"`
 }
 
 type SyncRequest struct {

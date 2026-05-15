@@ -46,7 +46,8 @@ class EditRecipeViewModel(app: Application) : AndroidViewModel(app) {
     fun delete(recipeId: String) {
         viewModelScope.launch {
             val recipe = dao.getById(recipeId) ?: return@launch
-            dao.delete(recipe)
+            val now = System.currentTimeMillis()
+            dao.update(recipe.copy(deletedAt = now, updatedAt = now))
         }
     }
 }

@@ -19,14 +19,16 @@ CREATE TABLE IF NOT EXISTS food_entries (
     notes TEXT,
     createdAt INTEGER NOT NULL,
     displayOrder INTEGER NOT NULL DEFAULT 0,
-    updatedAt INTEGER NOT NULL
+    updatedAt INTEGER NOT NULL,
+    deletedAt INTEGER
 );
 
 CREATE TABLE IF NOT EXISTS recipes (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
     notes TEXT,
-    updatedAt INTEGER NOT NULL
+    updatedAt INTEGER NOT NULL,
+    deletedAt INTEGER
 );
 
 CREATE TABLE IF NOT EXISTS sync_meta (
@@ -129,13 +131,13 @@ func upsertEntry(db *sql.DB, e FoodEntry) error {
 		return nil
 	}
 	_, err = db.Exec(`INSERT OR REPLACE INTO food_entries
-		(id, epochDay, foodName, mealType, notes, createdAt, displayOrder, updatedAt)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-		e.ID, e.EpochDay, e.FoodName, e.MealType, e.Notes, e.CreatedAt, e.DisplayOrder, e.UpdatedAt)
+		(id, epochDay, foodName, mealType, notes, createdAt, displayOrder, updatedAt, deletedAt)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		e.ID, e.EpochDay, e.FoodName, e.MealType, e.Notes, e.CreatedAt, e.DisplayOrder, e.UpdatedAt, e.DeletedAt)
 	if err != nil {
 		return err
 	}
-	slog.Debug("upserted entry", "id", e.ID, "foodName", e.FoodName, "updatedAt", e.UpdatedAt)
+	slog.Debug("upserted entry", "id", e.ID, "foodName", e.FoodName, "updatedAt", e.UpdatedAt, "deleted", e.DeletedAt != nil)
 	return nil
 }
 
@@ -149,20 +151,20 @@ func upsertRecipe(db *sql.DB, r Recipe) error {
 		return nil
 	}
 	_, err = db.Exec(`INSERT OR REPLACE INTO recipes
-		(id, name, notes, updatedAt) VALUES (?, ?, ?, ?)`,
-		r.ID, r.Name, r.Notes, r.UpdatedAt)
+		(id, name, notes, updatedAt, deletedAt) VALUES (?, ?, ?, ?, ?)`,
+		r.ID, r.Name, r.Notes, r.UpdatedAt, r.DeletedAt)
 	if err != nil {
 		return err
 	}
-	slog.Debug("upserted recipe", "id", r.ID, "name", r.Name, "updatedAt", r.UpdatedAt)
+	slog.Debug("upserted recipe", "id", r.ID, "name", r.Name, "updatedAt", r.UpdatedAt, "deleted", r.DeletedAt != nil)
 	return nil
 }
 
 func getEntry(db *sql.DB, id string) (*FoodEntry, error) {
-	row := db.QueryRow(`SELECT id, epochDay, foodName, mealType, notes, createdAt, displayOrder, updatedAt
+	row := db.QueryRow(`SELECT id, epochDay, foodName, mealType, notes, createdAt, displayOrder, updatedAt, deletedAt
 		FROM food_entries WHERE id = ?`, id)
 	var e FoodEntry
-	if err := row.Scan(&e.ID, &e.EpochDay, &e.FoodName, &e.MealType, &e.Notes, &e.CreatedAt, &e.DisplayOrder, &e.UpdatedAt); err != nil {
+	if err := row.Scan(&e.ID, &e.EpochDay, &e.FoodName, &e.MealType, &e.Notes, &e.CreatedAt, &e.DisplayOrder, &e.UpdatedAt, &e.DeletedAt); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil
 		}
@@ -172,9 +174,9 @@ func getEntry(db *sql.DB, id string) (*FoodEntry, error) {
 }
 
 func getRecipe(db *sql.DB, id string) (*Recipe, error) {
-	row := db.QueryRow(`SELECT id, name, notes, updatedAt FROM recipes WHERE id = ?`, id)
+	row := db.QueryRow(`SELECT id, name, notes, updatedAt, deletedAt FROM recipes WHERE id = ?`, id)
 	var r Recipe
-	if err := row.Scan(&r.ID, &r.Name, &r.Notes, &r.UpdatedAt); err != nil {
+	if err := row.Scan(&r.ID, &r.Name, &r.Notes, &r.UpdatedAt, &r.DeletedAt); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil
 		}
@@ -185,7 +187,7 @@ func getRecipe(db *sql.DB, id string) (*Recipe, error) {
 
 func getEntriesSince(db *sql.DB, since int64) ([]FoodEntry, error) {
 	result := make([]FoodEntry, 0)
-	rows, err := db.Query(`SELECT id, epochDay, foodName, mealType, notes, createdAt, displayOrder, updatedAt
+	rows, err := db.Query(`SELECT id, epochDay, foodName, mealType, notes, createdAt, displayOrder, updatedAt, deletedAt
 		FROM food_entries WHERE updatedAt > ? ORDER BY updatedAt`, since)
 	if err != nil {
 		return nil, err
@@ -193,7 +195,7 @@ func getEntriesSince(db *sql.DB, since int64) ([]FoodEntry, error) {
 	defer rows.Close()
 	for rows.Next() {
 		var e FoodEntry
-		if err := rows.Scan(&e.ID, &e.EpochDay, &e.FoodName, &e.MealType, &e.Notes, &e.CreatedAt, &e.DisplayOrder, &e.UpdatedAt); err != nil {
+		if err := rows.Scan(&e.ID, &e.EpochDay, &e.FoodName, &e.MealType, &e.Notes, &e.CreatedAt, &e.DisplayOrder, &e.UpdatedAt, &e.DeletedAt); err != nil {
 			return nil, err
 		}
 		result = append(result, e)
@@ -203,14 +205,14 @@ func getEntriesSince(db *sql.DB, since int64) ([]FoodEntry, error) {
 
 func getRecipesSince(db *sql.DB, since int64) ([]Recipe, error) {
 	result := make([]Recipe, 0)
-	rows, err := db.Query(`SELECT id, name, notes, updatedAt FROM recipes WHERE updatedAt > ? ORDER BY updatedAt`, since)
+	rows, err := db.Query(`SELECT id, name, notes, updatedAt, deletedAt FROM recipes WHERE updatedAt > ? ORDER BY updatedAt`, since)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 	for rows.Next() {
 		var r Recipe
-		if err := rows.Scan(&r.ID, &r.Name, &r.Notes, &r.UpdatedAt); err != nil {
+		if err := rows.Scan(&r.ID, &r.Name, &r.Notes, &r.UpdatedAt, &r.DeletedAt); err != nil {
 			return nil, err
 		}
 		result = append(result, r)
@@ -236,19 +238,10 @@ func rebuildToFile(dbPath string, data []byte) error {
 		return fmt.Errorf("ensure schema: %w", err)
 	}
 
-	if columnExists(tmpDB, "food_entries", "updatedAt") {
-		tmpDB.Exec("UPDATE food_entries SET updatedAt = createdAt WHERE updatedAt IS NULL")
-	} else {
-		tmpDB.Exec("ALTER TABLE food_entries ADD COLUMN updatedAt INTEGER")
-		tmpDB.Exec("UPDATE food_entries SET updatedAt = createdAt WHERE updatedAt IS NULL")
-	}
-
-	if columnExists(tmpDB, "recipes", "updatedAt") {
-		tmpDB.Exec("UPDATE recipes SET updatedAt = strftime('%s','now')*1000 WHERE updatedAt IS NULL")
-	} else {
-		tmpDB.Exec("ALTER TABLE recipes ADD COLUMN updatedAt INTEGER")
-		tmpDB.Exec("UPDATE recipes SET updatedAt = strftime('%s','now')*1000 WHERE updatedAt IS NULL")
-	}
+	migrateColumn(tmpDB, "food_entries", "updatedAt", "ALTER TABLE food_entries ADD COLUMN updatedAt INTEGER", "UPDATE food_entries SET updatedAt = createdAt WHERE updatedAt IS NULL")
+	migrateColumn(tmpDB, "food_entries", "deletedAt", "ALTER TABLE food_entries ADD COLUMN deletedAt INTEGER", "")
+	migrateColumn(tmpDB, "recipes", "updatedAt", "ALTER TABLE recipes ADD COLUMN updatedAt INTEGER", "UPDATE recipes SET updatedAt = strftime('%s','now')*1000 WHERE updatedAt IS NULL")
+	migrateColumn(tmpDB, "recipes", "deletedAt", "ALTER TABLE recipes ADD COLUMN deletedAt INTEGER", "")
 
 	tmpDB.Close()
 
@@ -259,6 +252,16 @@ func rebuildToFile(dbPath string, data []byte) error {
 
 	slog.Debug("database file replaced atomically", "path", dbPath)
 	return nil
+}
+
+func migrateColumn(db *sql.DB, table, column, alterSQL, updateSQL string) {
+	if !columnExists(db, table, column) {
+		db.Exec(alterSQL)
+		if updateSQL != "" {
+			db.Exec(updateSQL)
+		}
+		slog.Debug("migrated column", "table", table, "column", column)
+	}
 }
 
 func columnExists(db *sql.DB, table, column string) bool {
