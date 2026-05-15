@@ -18,6 +18,8 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -140,10 +142,14 @@ fun DailyJournalScreen(
                                 )
                             }
                             items(group, key = { it.id }) { entry ->
+                                val isFirst = group.first().id == entry.id
+                                val isLast = group.last().id == entry.id
                                 EntryRow(
                                     entry = entry,
                                     onClick = { onEditEntry(entry.id) },
                                     onDelete = { viewModel.deleteEntry(entry) },
+                                    onMoveUp = if (!isFirst) ({ viewModel.moveEntry(entry, -1) }) else null,
+                                    onMoveDown = if (!isLast) ({ viewModel.moveEntry(entry, 1) }) else null,
                                 )
                             }
                         }
@@ -187,6 +193,8 @@ private fun EntryRow(
     entry: FoodEntry,
     onClick: () -> Unit,
     onDelete: () -> Unit,
+    onMoveUp: (() -> Unit)?,
+    onMoveDown: (() -> Unit)?,
 ) {
     Card(
         onClick = onClick,
@@ -200,10 +208,14 @@ private fun EntryRow(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
+                .padding(end = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Column(modifier = Modifier.weight(1f)) {
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = 12.dp, top = 12.dp, bottom = 12.dp)
+            ) {
                 Text(
                     text = entry.foodName,
                     style = MaterialTheme.typography.bodyLarge,
@@ -215,6 +227,24 @@ private fun EntryRow(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
+                    )
+                }
+            }
+            Column {
+                IconButton(onClick = { onMoveUp?.invoke() }, enabled = onMoveUp != null) {
+                    Icon(
+                        Icons.Default.KeyboardArrowUp,
+                        contentDescription = "Move up",
+                        tint = if (onMoveUp != null) MaterialTheme.colorScheme.onSurfaceVariant
+                               else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
+                    )
+                }
+                IconButton(onClick = { onMoveDown?.invoke() }, enabled = onMoveDown != null) {
+                    Icon(
+                        Icons.Default.KeyboardArrowDown,
+                        contentDescription = "Move down",
+                        tint = if (onMoveDown != null) MaterialTheme.colorScheme.onSurfaceVariant
+                               else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
                     )
                 }
             }

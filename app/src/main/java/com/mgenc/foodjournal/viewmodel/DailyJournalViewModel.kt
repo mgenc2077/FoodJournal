@@ -38,4 +38,18 @@ class DailyJournalViewModel(app: Application) : AndroidViewModel(app) {
     fun deleteEntry(entry: FoodEntry) {
         viewModelScope.launch { dao.delete(entry) }
     }
+
+    fun moveEntry(entry: FoodEntry, direction: Int) {
+        viewModelScope.launch {
+            val sameMeal = entries.value.filter { it.mealType == entry.mealType }
+            val currentIndex = sameMeal.indexOfFirst { it.id == entry.id }
+            if (currentIndex < 0) return@launch
+            val targetIndex = currentIndex + direction
+            if (targetIndex < 0 || targetIndex >= sameMeal.size) return@launch
+            val mutable = sameMeal.toMutableList()
+            mutable.removeAt(currentIndex)
+            mutable.add(targetIndex, entry)
+            dao.updateDisplayOrders(mutable)
+        }
+    }
 }
