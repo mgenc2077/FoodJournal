@@ -33,7 +33,7 @@ import com.mgenc.foodjournal.viewmodel.EditRecipeViewModel
 @Composable
 fun EditRecipeScreen(
     viewModel: EditRecipeViewModel,
-    recipeId: Long?,
+    recipeId: String?,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {

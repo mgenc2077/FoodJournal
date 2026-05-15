@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.mgenc.foodjournal.FoodJournalApp
+import com.mgenc.foodjournal.util.uuidV7
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -20,7 +21,7 @@ class EditRecipeViewModel(app: Application) : AndroidViewModel(app) {
     fun setName(name: String) { _name.value = name }
     fun setNotes(notes: String) { _notes.value = notes }
 
-    fun loadRecipe(recipeId: Long) {
+    fun loadRecipe(recipeId: String) {
         viewModelScope.launch {
             val recipe = dao.getById(recipeId) ?: return@launch
             _name.value = recipe.name
@@ -28,21 +29,21 @@ class EditRecipeViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    fun save(existingId: Long? = null): Boolean {
+    fun save(existingId: String? = null): Boolean {
         val name = _name.value.trim()
         if (name.isBlank()) return false
         viewModelScope.launch {
             if (existingId != null) {
                 val existing = dao.getById(existingId) ?: return@launch
-                dao.update(existing.copy(name = name, notes = _notes.value.ifBlank { null }))
+                dao.update(existing.copy(name = name, notes = _notes.value.ifBlank { null }, updatedAt = System.currentTimeMillis()))
             } else {
-                dao.insert(com.mgenc.foodjournal.data.Recipe(name = name, notes = _notes.value.ifBlank { null }))
+                dao.insert(com.mgenc.foodjournal.data.Recipe(id = uuidV7(), name = name, notes = _notes.value.ifBlank { null }))
             }
         }
         return true
     }
 
-    fun delete(recipeId: Long) {
+    fun delete(recipeId: String) {
         viewModelScope.launch {
             val recipe = dao.getById(recipeId) ?: return@launch
             dao.delete(recipe)

@@ -58,7 +58,7 @@ private val dayFormatter = DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy")
 fun DailyJournalScreen(
     viewModel: DailyJournalViewModel,
     onAddEntry: (Long) -> Unit,
-    onEditEntry: (Long) -> Unit,
+    onEditEntry: (String) -> Unit,
     onTimeline: () -> Unit,
     onRecipes: () -> Unit,
     onSettings: () -> Unit,

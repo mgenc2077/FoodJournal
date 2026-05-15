@@ -1,27 +1,27 @@
 package com.mgenc.foodjournal
 
 import android.app.Application
+import android.content.Context
 import androidx.room.Room
-import androidx.room.migration.Migration
-import androidx.sqlite.db.SupportSQLiteDatabase
+import androidx.room.RoomDatabase
 import com.mgenc.foodjournal.data.FoodJournalDatabase
 
 class FoodJournalApp : Application() {
     val database: FoodJournalDatabase by lazy {
-        Room.databaseBuilder(this, FoodJournalDatabase::class.java, "food_journal.db")
-            .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+        Room.databaseBuilder(this, FoodJournalDatabase::class.java, "food_journal")
+            .fallbackToDestructiveMigration(true)
             .build()
     }
-}
 
-private val MIGRATION_1_2 = object : Migration(1, 2) {
-    override fun migrate(db: SupportSQLiteDatabase) {
-        db.execSQL("ALTER TABLE food_entries ADD COLUMN displayOrder INTEGER NOT NULL DEFAULT 0")
+    private val prefs by lazy {
+        getSharedPreferences("sync_prefs", Context.MODE_PRIVATE)
     }
-}
 
-private val MIGRATION_2_3 = object : Migration(2, 3) {
-    override fun migrate(db: SupportSQLiteDatabase) {
-        db.execSQL("CREATE TABLE IF NOT EXISTS recipes (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, name TEXT NOT NULL, notes TEXT)")
-    }
+    var serverUrl: String
+        get() = prefs.getString("server_url", "") ?: ""
+        set(value) = prefs.edit().putString("server_url", value).apply()
+
+    var lastSyncAt: Long
+        get() = prefs.getLong("last_sync_at", 0L)
+        set(value) = prefs.edit().putLong("last_sync_at", value).apply()
 }

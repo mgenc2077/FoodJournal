@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.mgenc.foodjournal.FoodJournalApp
 import com.mgenc.foodjournal.data.FoodEntry
 import com.mgenc.foodjournal.data.MealType
+import com.mgenc.foodjournal.util.uuidV7
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -26,7 +27,7 @@ class AddEditEntryViewModel(app: Application) : AndroidViewModel(app) {
     fun setMealType(type: String) { _mealType.value = type }
     fun setNotes(notes: String) { _notes.value = notes }
 
-    fun loadEntry(entryId: Long) {
+    fun loadEntry(entryId: String) {
         viewModelScope.launch {
             val entry = dao.getById(entryId) ?: return@launch
             _foodName.value = entry.foodName
@@ -35,7 +36,7 @@ class AddEditEntryViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    fun saveEntry(epochDay: Long, existingId: Long? = null): Boolean {
+    fun saveEntry(epochDay: Long, existingId: String? = null): Boolean {
         val name = _foodName.value.trim()
         if (name.isBlank()) return false
         viewModelScope.launch {
@@ -46,11 +47,13 @@ class AddEditEntryViewModel(app: Application) : AndroidViewModel(app) {
                         foodName = name,
                         mealType = _mealType.value,
                         notes = _notes.value.ifBlank { null },
+                        updatedAt = System.currentTimeMillis(),
                     )
                 )
             } else {
                 dao.insert(
                     FoodEntry(
+                        id = uuidV7(),
                         epochDay = epochDay,
                         foodName = name,
                         mealType = _mealType.value,
@@ -62,7 +65,7 @@ class AddEditEntryViewModel(app: Application) : AndroidViewModel(app) {
         return true
     }
 
-    fun deleteEntry(entryId: Long) {
+    fun deleteEntry(entryId: String) {
         viewModelScope.launch {
             val entry = dao.getById(entryId) ?: return@launch
             dao.delete(entry)

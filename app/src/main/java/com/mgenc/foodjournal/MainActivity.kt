@@ -38,7 +38,7 @@ data class DailyJournal(val epochDay: Long = LocalDate.now().toEpochDay()) : Nav
 data class AddEntry(val epochDay: Long) : NavKey
 
 @Serializable
-data class EditEntry(val entryId: Long) : NavKey
+data class EditEntry(val entryId: String) : NavKey
 
 @Serializable
 data object Timeline : NavKey
@@ -47,7 +47,7 @@ data object Timeline : NavKey
 data object Recipes : NavKey
 
 @Serializable
-data class EditRecipe(val recipeId: Long? = null) : NavKey
+data class EditRecipe(val recipeId: String? = null) : NavKey
 
 @Serializable
 data object Settings : NavKey

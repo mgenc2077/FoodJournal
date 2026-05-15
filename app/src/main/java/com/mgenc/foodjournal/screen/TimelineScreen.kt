@@ -42,7 +42,7 @@ private val dateFormatter = DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy")
 fun TimelineScreen(
     viewModel: TimelineViewModel,
     onBack: () -> Unit,
-    onEditEntry: (Long) -> Unit,
+    onEditEntry: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val entries by viewModel.entries.collectAsState()

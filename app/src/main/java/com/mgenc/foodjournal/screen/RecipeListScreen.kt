@@ -41,7 +41,7 @@ fun RecipeListScreen(
     viewModel: RecipeListViewModel,
     onBack: () -> Unit,
     onAddRecipe: () -> Unit,
-    onEditRecipe: (Long) -> Unit,
+    onEditRecipe: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val recipes by viewModel.recipes.collectAsState()

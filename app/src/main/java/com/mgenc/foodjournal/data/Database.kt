@@ -18,13 +18,14 @@ enum class MealType {
 
 @Entity(tableName = "food_entries")
 data class FoodEntry(
-    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    @PrimaryKey val id: String,
     val epochDay: Long,
     val foodName: String,
     val mealType: String,
     val notes: String? = null,
     val createdAt: Long = System.currentTimeMillis(),
     val displayOrder: Int = 0,
+    val updatedAt: Long = System.currentTimeMillis(),
 )
 
 @Dao
@@ -36,7 +37,10 @@ interface FoodEntryDao {
     fun getAll(): Flow<List<FoodEntry>>
 
     @Query("SELECT * FROM food_entries WHERE id = :id")
-    suspend fun getById(id: Long): FoodEntry?
+    suspend fun getById(id: String): FoodEntry?
+
+    @Query("SELECT * FROM food_entries WHERE updatedAt > :since ORDER BY updatedAt")
+    suspend fun getChangedSince(since: Long): List<FoodEntry>
 
     @Insert
     suspend fun insert(entry: FoodEntry): Long
@@ -49,17 +53,34 @@ interface FoodEntryDao {
 
     @Transaction
     suspend fun updateDisplayOrders(entries: List<FoodEntry>) {
+        val now = System.currentTimeMillis()
         for ((index, entry) in entries.withIndex()) {
-            update(entry.copy(displayOrder = index))
+            update(entry.copy(displayOrder = index, updatedAt = now))
+        }
+    }
+
+    @Query("SELECT COUNT(*) FROM food_entries")
+    suspend fun count(): Int
+
+    @Transaction
+    suspend fun upsertAll(entries: List<FoodEntry>) {
+        for (entry in entries) {
+            val existing = getById(entry.id)
+            if (existing == null) {
+                insert(entry)
+            } else if (entry.updatedAt > existing.updatedAt) {
+                update(entry)
+            }
         }
     }
 }
 
 @Entity(tableName = "recipes")
 data class Recipe(
-    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    @PrimaryKey val id: String,
     val name: String,
     val notes: String? = null,
+    val updatedAt: Long = System.currentTimeMillis(),
 )
 
 @Dao
@@ -68,7 +89,10 @@ interface RecipeDao {
     fun getAll(): Flow<List<Recipe>>
 
     @Query("SELECT * FROM recipes WHERE id = :id")
-    suspend fun getById(id: Long): Recipe?
+    suspend fun getById(id: String): Recipe?
+
+    @Query("SELECT * FROM recipes WHERE updatedAt > :since ORDER BY updatedAt")
+    suspend fun getChangedSince(since: Long): List<Recipe>
 
     @Insert
     suspend fun insert(recipe: Recipe): Long
@@ -78,9 +102,24 @@ interface RecipeDao {
 
     @Delete
     suspend fun delete(recipe: Recipe)
+
+    @Query("SELECT COUNT(*) FROM recipes")
+    suspend fun count(): Int
+
+    @Transaction
+    suspend fun upsertAll(recipes: List<Recipe>) {
+        for (recipe in recipes) {
+            val existing = getById(recipe.id)
+            if (existing == null) {
+                insert(recipe)
+            } else if (recipe.updatedAt > existing.updatedAt) {
+                update(recipe)
+            }
+        }
+    }
 }
 
-@Database(entities = [FoodEntry::class, Recipe::class], version = 3)
+@Database(entities = [FoodEntry::class, Recipe::class], version = 4)
 abstract class FoodJournalDatabase : RoomDatabase() {
     abstract fun foodEntryDao(): FoodEntryDao
     abstract fun recipeDao(): RecipeDao

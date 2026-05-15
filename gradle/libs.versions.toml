@@ -8,6 +8,7 @@ activityCompose = "1.10.1"
 composeBom = "2026.03.00"
 nav3Core = "1.1.0"
 kotlinxSerializationCore = "1.9.0"
+kotlinxSerializationJson = "1.9.0"
 kotlin = "2.3.10"
 room = "2.7.1"
 ksp = "2.3.8"
@@ -29,6 +30,7 @@ androidx-activity-compose = { group = "androidx.activity", name = "activity-comp
 androidx-navigation3-runtime = { module = "androidx.navigation3:navigation3-runtime", version.ref = "nav3Core" }
 androidx-navigation3-ui = { module = "androidx.navigation3:navigation3-ui", version.ref = "nav3Core" }
 kotlinx-serialization-core = { module = "org.jetbrains.kotlinx:kotlinx-serialization-core", version.ref = "kotlinxSerializationCore" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }

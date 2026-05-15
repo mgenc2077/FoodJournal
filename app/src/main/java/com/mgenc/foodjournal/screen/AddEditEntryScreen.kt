@@ -60,7 +60,7 @@ private class RecipeDropdownViewModel(app: Application) : AndroidViewModel(app) 
 fun AddEditEntryScreen(
     viewModel: AddEditEntryViewModel,
     epochDay: Long,
-    entryId: Long?,
+    entryId: String?,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {

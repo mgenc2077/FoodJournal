@@ -21,3 +21,10 @@ notes.md
 
 # keystore
 release.keystore
+
+# Sync-engine
+*.db
+*.db-shm
+*.db-wal
+*.log
+sync-engine/sync-engine
