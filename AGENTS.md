@@ -19,7 +19,8 @@ Data layer: Room (SQLite) via `FoodJournalApp` Application class.
 
 - **Jetpack Compose** with Material 3 dynamic theming (Compose BOM `2026.03.00`).
 - **Navigation 3** (`navigation3-runtime` + `navigation3-ui`) — routes are `@Serializable` data objects/classes implementing `NavKey`. Use `rememberNavBackStack`, `NavDisplay`, and `entryProvider` DSL.
-- **Room** database with KSP (`2.3.8`) for annotation processing. Entity in `data/Database.kt`.
+- **Room** database (version 2) with KSP (`2.3.8`) for annotation processing. Entity + DAO + migrations in `data/Database.kt`. Schema changes require a `Migration` in `FoodJournalApp.kt`.
+- NavDisplay transitions are disabled (`EnterTransition.None togetherWith ExitTransition.None`) — no white flash on navigation.
 - **AGP 9.2.1** has built-in Kotlin — do NOT apply `org.jetbrains.kotlin.android`. Apply `org.jetbrains.kotlin.plugin.compose`, `org.jetbrains.kotlin.plugin.serialization`, and `com.google.devtools.ksp` only.
 - No `kotlinOptions` block in AGP 9.x — JVM target follows `compileOptions`.
 - **Java 17** source/target compatibility. compileSdk 36, minSdk 34, targetSdk 36.
@@ -33,7 +34,7 @@ Data layer: Room (SQLite) via `FoodJournalApp` Application class.
 - **DailyJournal** (start) → hamburger drawer with "Today" and "Timeline"
 - **AddEntry** ← FAB on DailyJournal
 - **EditEntry** ← tap any entry row (from DailyJournal or Timeline)
-- **Timeline** ← drawer item; scrollable list grouped by date
+- **Timeline** ← drawer item; scrollable list grouped by date then meal type
 
 ## Key paths
 
