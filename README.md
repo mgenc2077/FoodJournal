@@ -11,6 +11,7 @@ I wanted to use an app for tracking what you eat each day, but found all the ava
 - **Reorder** — move entries up or down within a meal group
 - **Recipes** — save recipe templates with ingredient notes; quick-fill new entries from a recipe dropdown
 - **Edit & delete** — tap to edit, delete button on every entry
+- **Sync** — synchronize your data with a self-hosted server on your LAN
 - **Material You** — dynamic color theming that adapts to your wallpaper
 
 ## Tech stack
@@ -18,12 +19,18 @@ I wanted to use an app for tracking what you eat each day, but found all the ava
 - Kotlin, Jetpack Compose, Material 3
 - Navigation 3 (NavDisplay + entryProvider DSL)
 - Room (SQLite) with KSP for persistence
+- kotlinx.serialization for sync wire format
+- Go sync server with SQLite (ncruces/go-sqlite3, WASM-based, no CGO)
 - Manual DI via Application class + AndroidViewModel
 - AGP 9.2.1, compileSdk 36, minSdk 34
 
 ## Releases
 
 Pre-built APKs are available on the [Releases page](../../releases). Each release is automatically built and published when a version tag (`vX.X.X`) is pushed.
+
+## Sync server
+
+See [`sync-engine/README.md`](sync-engine/README.md) for the sync server setup and API documentation.
 
 ## Screens
 
@@ -34,6 +41,7 @@ Pre-built APKs are available on the [Releases page](../../releases). Each releas
 | Edit Entry | Edit an existing entry or delete it |
 | Timeline | All entries across all days, grouped by date then meal type |
 | Recipes | Manage recipe templates (name + ingredient notes) |
+| Settings | Server URL, sync button, last sync time |
 
 ## Local development
 
