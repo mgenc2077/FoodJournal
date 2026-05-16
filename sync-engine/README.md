@@ -4,7 +4,25 @@ Go server that synchronizes Food Journal data between Android clients over LAN.
 
 ## Quick start
 
-### Docker (recommended)
+### Docker from GHCR (recommended)
+
+Pre-built images are published to GitHub Container Registry on every release:
+
+```sh
+docker pull ghcr.io/mgenc2077/FoodJournal/sync-engine:latest
+
+docker run -p 42061:42061 \
+  -v sync-data:/data \
+  ghcr.io/mgenc2077/FoodJournal/sync-engine:latest
+```
+
+Specific versions are also available:
+
+```sh
+docker pull ghcr.io/mgenc2077/FoodJournal/sync-engine:1.0.0
+```
+
+### Build from source
 
 ```sh
 docker build -t sync-engine .

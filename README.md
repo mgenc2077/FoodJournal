@@ -30,7 +30,13 @@ Pre-built APKs are available on the [Releases page](../../releases). Each releas
 
 ## Sync server
 
-See [`sync-engine/README.md`](sync-engine/README.md) for the sync server setup and API documentation.
+A container image is published to GitHub Container Registry on every release:
+
+```sh
+docker pull ghcr.io/mgenc2077/FoodJournal/sync-engine:latest
+```
+
+See [`sync-engine/README.md`](sync-engine/README.md) for full setup, configuration, and API documentation.
 
 ## Screens
 
