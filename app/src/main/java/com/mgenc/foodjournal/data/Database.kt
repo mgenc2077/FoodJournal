@@ -114,8 +114,41 @@ interface RecipeDao {
     }
 }
 
-@Database(entities = [FoodEntry::class, Recipe::class], version = 5)
+@Entity(tableName = "reminders")
+data class Reminder(
+    @PrimaryKey val id: String,
+    val mealType: String,
+    val hour: Int,
+    val minute: Int,
+    val enabled: Boolean = true,
+    val createdAt: Long = System.currentTimeMillis(),
+    val updatedAt: Long = System.currentTimeMillis(),
+)
+
+@Dao
+interface ReminderDao {
+    @Query("SELECT * FROM reminders ORDER BY mealType, hour, minute")
+    fun getAll(): Flow<List<Reminder>>
+
+    @Query("SELECT * FROM reminders WHERE enabled = 1")
+    suspend fun getEnabled(): List<Reminder>
+
+    @Query("SELECT * FROM reminders WHERE id = :id")
+    suspend fun getById(id: String): Reminder?
+
+    @Insert
+    suspend fun insert(reminder: Reminder): Long
+
+    @Update
+    suspend fun update(reminder: Reminder)
+
+    @Query("DELETE FROM reminders WHERE id = :id")
+    suspend fun deleteById(id: String)
+}
+
+@Database(entities = [FoodEntry::class, Recipe::class, Reminder::class], version = 6)
 abstract class FoodJournalDatabase : RoomDatabase() {
     abstract fun foodEntryDao(): FoodEntryDao
     abstract fun recipeDao(): RecipeDao
+    abstract fun reminderDao(): ReminderDao
 }

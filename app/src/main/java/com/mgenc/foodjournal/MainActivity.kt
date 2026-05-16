@@ -19,6 +19,7 @@ import com.mgenc.foodjournal.screen.AddEditEntryScreen
 import com.mgenc.foodjournal.screen.DailyJournalScreen
 import com.mgenc.foodjournal.screen.EditRecipeScreen
 import com.mgenc.foodjournal.screen.RecipeListScreen
+import com.mgenc.foodjournal.screen.ReminderScreen
 import com.mgenc.foodjournal.screen.SettingsScreen
 import com.mgenc.foodjournal.screen.TimelineScreen
 import com.mgenc.foodjournal.ui.theme.FoodJournalTheme
@@ -26,6 +27,7 @@ import com.mgenc.foodjournal.viewmodel.AddEditEntryViewModel
 import com.mgenc.foodjournal.viewmodel.DailyJournalViewModel
 import com.mgenc.foodjournal.viewmodel.EditRecipeViewModel
 import com.mgenc.foodjournal.viewmodel.RecipeListViewModel
+import com.mgenc.foodjournal.viewmodel.ReminderViewModel
 import com.mgenc.foodjournal.viewmodel.SettingsViewModel
 import com.mgenc.foodjournal.viewmodel.TimelineViewModel
 import kotlinx.serialization.Serializable
@@ -48,6 +50,9 @@ data object Recipes : NavKey
 
 @Serializable
 data class EditRecipe(val recipeId: String? = null) : NavKey
+
+@Serializable
+data object Reminders : NavKey
 
 @Serializable
 data object Settings : NavKey
@@ -74,6 +79,7 @@ class MainActivity : ComponentActivity() {
                                 onEditEntry = { backStack.add(EditEntry(it)) },
                                 onTimeline = { backStack.add(Timeline) },
                                 onRecipes = { backStack.add(Recipes) },
+                                onReminders = { backStack.add(Reminders) },
                                 onSettings = { backStack.add(Settings) },
                             )
                         }
@@ -123,6 +129,13 @@ class MainActivity : ComponentActivity() {
                         entry<Settings> {
                             val vm: SettingsViewModel = viewModel()
                             SettingsScreen(
+                                viewModel = vm,
+                                onBack = { backStack.removeLastOrNull() },
+                            )
+                        }
+                        entry<Reminders> {
+                            val vm: ReminderViewModel = viewModel()
+                            ReminderScreen(
                                 viewModel = vm,
                                 onBack = { backStack.removeLastOrNull() },
                             )
