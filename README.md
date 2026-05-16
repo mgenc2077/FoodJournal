@@ -13,6 +13,7 @@ I wanted to use an app for tracking what you eat each day, but found all the ava
 - **Edit & delete** — tap to edit, delete button on every entry
 - **Sync** — synchronize your data with a self-hosted server on your LAN
 - **Reminders** — daily notifications per meal (Breakfast, Lunch, Dinner) via WorkManager
+- **Cooking Calendar** — monthly calendar with daily cooking plans, synced across devices
 - **Material You** — dynamic color theming that adapts to your wallpaper
 
 ## Tech stack
@@ -50,6 +51,7 @@ See [`sync-engine/README.md`](sync-engine/README.md) for full setup, configurati
 | Timeline | All entries across all days, grouped by date then meal type |
 | Recipes | Manage recipe templates (name + ingredient notes) |
 | Reminders | Configure daily notification reminders per meal type |
+| Cooking Calendar | Monthly grid showing cooking plans per day; tap to add/edit/delete |
 | Settings | Server URL, sync button, last sync time |
 
 ## Local development
