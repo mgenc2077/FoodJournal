@@ -13,7 +13,7 @@ import com.mgenc.foodjournal.data.FoodJournalDatabase
 class FoodJournalApp : Application() {
     val database: FoodJournalDatabase by lazy {
         Room.databaseBuilder(this, FoodJournalDatabase::class.java, "food_journal")
-            .addMigrations(MIGRATION_4_5, MIGRATION_5_6)
+            .addMigrations(MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
             .fallbackToDestructiveMigration(true)
             .build()
     }
@@ -65,6 +65,24 @@ private val MIGRATION_5_6 = object : Migration(5, 6) {
                 enabled INTEGER NOT NULL DEFAULT 1,
                 createdAt INTEGER NOT NULL,
                 updatedAt INTEGER NOT NULL
+            )
+            """.trimIndent()
+        )
+    }
+}
+
+private val MIGRATION_6_7 = object : Migration(6, 7) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS cooking_plans (
+                id TEXT PRIMARY KEY NOT NULL,
+                epochDay INTEGER NOT NULL,
+                name TEXT NOT NULL,
+                notes TEXT,
+                createdAt INTEGER NOT NULL,
+                updatedAt INTEGER NOT NULL,
+                deletedAt INTEGER
             )
             """.trimIndent()
         )

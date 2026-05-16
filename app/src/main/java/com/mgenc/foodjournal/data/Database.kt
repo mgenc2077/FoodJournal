@@ -146,9 +146,57 @@ interface ReminderDao {
     suspend fun deleteById(id: String)
 }
 
-@Database(entities = [FoodEntry::class, Recipe::class, Reminder::class], version = 6)
+@Entity(tableName = "cooking_plans")
+data class CookingPlan(
+    @PrimaryKey val id: String,
+    val epochDay: Long,
+    val name: String,
+    val notes: String? = null,
+    val createdAt: Long = System.currentTimeMillis(),
+    val updatedAt: Long = System.currentTimeMillis(),
+    val deletedAt: Long? = null,
+)
+
+@Dao
+interface CookingPlanDao {
+    @Query("SELECT * FROM cooking_plans WHERE epochDay = :epochDay AND deletedAt IS NULL ORDER BY createdAt")
+    fun getByDate(epochDay: Long): Flow<List<CookingPlan>>
+
+    @Query("SELECT * FROM cooking_plans WHERE deletedAt IS NULL")
+    fun getAllActive(): Flow<List<CookingPlan>>
+
+    @Query("SELECT * FROM cooking_plans WHERE id = :id")
+    suspend fun getById(id: String): CookingPlan?
+
+    @Query("SELECT * FROM cooking_plans WHERE updatedAt > :since ORDER BY updatedAt")
+    suspend fun getChangedSince(since: Long): List<CookingPlan>
+
+    @Insert
+    suspend fun insert(plan: CookingPlan): Long
+
+    @Update
+    suspend fun update(plan: CookingPlan)
+
+    @Query("SELECT COUNT(*) FROM cooking_plans")
+    suspend fun count(): Int
+
+    @Transaction
+    suspend fun upsertAll(plans: List<CookingPlan>) {
+        for (plan in plans) {
+            val existing = getById(plan.id)
+            if (existing == null) {
+                insert(plan)
+            } else if (plan.updatedAt > existing.updatedAt) {
+                update(plan)
+            }
+        }
+    }
+}
+
+@Database(entities = [FoodEntry::class, Recipe::class, Reminder::class, CookingPlan::class], version = 7)
 abstract class FoodJournalDatabase : RoomDatabase() {
     abstract fun foodEntryDao(): FoodEntryDao
     abstract fun recipeDao(): RecipeDao
     abstract fun reminderDao(): ReminderDao
+    abstract fun cookingPlanDao(): CookingPlanDao
 }

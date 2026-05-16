@@ -17,6 +17,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
@@ -63,6 +64,7 @@ fun DailyJournalScreen(
     onTimeline: () -> Unit,
     onRecipes: () -> Unit,
     onReminders: () -> Unit,
+    onCookingCalendar: () -> Unit,
     onSettings: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -110,6 +112,16 @@ fun DailyJournalScreen(
                     onClick = {
                         scope.launch { drawerState.close() }
                         onReminders()
+                    },
+                    modifier = Modifier.padding(horizontal = 12.dp),
+                )
+                NavigationDrawerItem(
+                    icon = { Icon(Icons.Default.CalendarMonth, contentDescription = null) },
+                    label = { Text("Cooking Calendar") },
+                    selected = false,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        onCookingCalendar()
                     },
                     modifier = Modifier.padding(horizontal = 12.dp),
                 )

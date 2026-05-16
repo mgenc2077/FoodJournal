@@ -16,6 +16,8 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import com.mgenc.foodjournal.screen.AddEditEntryScreen
+import com.mgenc.foodjournal.screen.CookingCalendarScreen
+import com.mgenc.foodjournal.screen.CookingPlanScreen
 import com.mgenc.foodjournal.screen.DailyJournalScreen
 import com.mgenc.foodjournal.screen.EditRecipeScreen
 import com.mgenc.foodjournal.screen.RecipeListScreen
@@ -23,7 +25,9 @@ import com.mgenc.foodjournal.screen.ReminderScreen
 import com.mgenc.foodjournal.screen.SettingsScreen
 import com.mgenc.foodjournal.screen.TimelineScreen
 import com.mgenc.foodjournal.ui.theme.FoodJournalTheme
+import com.mgenc.foodjournal.viewmodel.AddEditCookingPlanViewModel
 import com.mgenc.foodjournal.viewmodel.AddEditEntryViewModel
+import com.mgenc.foodjournal.viewmodel.CookingCalendarViewModel
 import com.mgenc.foodjournal.viewmodel.DailyJournalViewModel
 import com.mgenc.foodjournal.viewmodel.EditRecipeViewModel
 import com.mgenc.foodjournal.viewmodel.RecipeListViewModel
@@ -55,6 +59,15 @@ data class EditRecipe(val recipeId: String? = null) : NavKey
 data object Reminders : NavKey
 
 @Serializable
+data object CookingCalendar : NavKey
+
+@Serializable
+data class CookingPlanDay(val epochDay: Long) : NavKey
+
+@Serializable
+data class EditCookingPlan(val planId: String, val epochDay: Long) : NavKey
+
+@Serializable
 data object Settings : NavKey
 
 class MainActivity : ComponentActivity() {
@@ -80,6 +93,7 @@ class MainActivity : ComponentActivity() {
                                 onTimeline = { backStack.add(Timeline) },
                                 onRecipes = { backStack.add(Recipes) },
                                 onReminders = { backStack.add(Reminders) },
+                                onCookingCalendar = { backStack.add(CookingCalendar) },
                                 onSettings = { backStack.add(Settings) },
                             )
                         }
@@ -138,6 +152,34 @@ class MainActivity : ComponentActivity() {
                             ReminderScreen(
                                 viewModel = vm,
                                 onBack = { backStack.removeLastOrNull() },
+                            )
+                        }
+                        entry<CookingCalendar> {
+                            val vm: CookingCalendarViewModel = viewModel()
+                            CookingCalendarScreen(
+                                viewModel = vm,
+                                onBack = { backStack.removeLastOrNull() },
+                                onDayClick = { backStack.add(CookingPlanDay(it)) },
+                            )
+                        }
+                        entry<CookingPlanDay> { key ->
+                            val vm: AddEditCookingPlanViewModel = viewModel()
+                            CookingPlanScreen(
+                                viewModel = vm,
+                                epochDay = key.epochDay,
+                                editingPlanId = null,
+                                onBack = { backStack.removeLastOrNull() },
+                                onEditPlan = { backStack.add(EditCookingPlan(it, key.epochDay)) },
+                            )
+                        }
+                        entry<EditCookingPlan> { key ->
+                            val vm: AddEditCookingPlanViewModel = viewModel()
+                            CookingPlanScreen(
+                                viewModel = vm,
+                                epochDay = key.epochDay,
+                                editingPlanId = key.planId,
+                                onBack = { backStack.removeLastOrNull() },
+                                onEditPlan = { },
                             )
                         }
                     },

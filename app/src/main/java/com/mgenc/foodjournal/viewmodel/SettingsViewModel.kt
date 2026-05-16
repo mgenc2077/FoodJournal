@@ -25,6 +25,7 @@ class SettingsViewModel(app: Application) : AndroidViewModel(app) {
     private val foodApp = app as FoodJournalApp
     private val foodEntryDao = foodApp.database.foodEntryDao()
     private val recipeDao = foodApp.database.recipeDao()
+    private val cookingPlanDao = foodApp.database.cookingPlanDao()
 
     private val _serverUrl = MutableStateFlow(foodApp.serverUrl)
     val serverUrl: StateFlow<String> = _serverUrl
@@ -77,11 +78,13 @@ class SettingsViewModel(app: Application) : AndroidViewModel(app) {
 
         val changedEntries = foodEntryDao.getChangedSince(lastSyncAt).map { it.toSync() }
         val changedRecipes = recipeDao.getChangedSince(lastSyncAt).map { it.toSync() }
+        val changedPlans = cookingPlanDao.getChangedSince(lastSyncAt).map { it.toSync() }
 
         val request = SyncRequest(
             lastSyncAt = lastSyncAt,
             entries = changedEntries,
             recipes = changedRecipes,
+            cookingPlans = changedPlans,
         )
 
         val syncUrl = buildUrl(baseUrl, "/sync")
@@ -138,7 +141,7 @@ class SettingsViewModel(app: Application) : AndroidViewModel(app) {
             val syncUrl = buildUrl(baseUrl, "/sync")
             val (syncStatus, syncBody) = httpPostJson(
                 syncUrl,
-                json.encodeToString(SyncRequest.serializer(), SyncRequest(lastSyncAt = 0L, entries = emptyList(), recipes = emptyList())),
+                json.encodeToString(SyncRequest.serializer(), SyncRequest(lastSyncAt = 0L, entries = emptyList(), recipes = emptyList(), cookingPlans = emptyList())),
             )
             if (syncStatus == 200) {
                 val syncResp = json.decodeFromString(SyncResponse.serializer(), syncBody)
@@ -160,6 +163,9 @@ class SettingsViewModel(app: Application) : AndroidViewModel(app) {
         }
         if (response.recipes.isNotEmpty()) {
             recipeDao.upsertAll(response.recipes.map { it.toEntity() })
+        }
+        if (response.cookingPlans.isNotEmpty()) {
+            cookingPlanDao.upsertAll(response.cookingPlans.map { it.toEntity() })
         }
     }
 
