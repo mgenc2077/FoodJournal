@@ -12,6 +12,7 @@ I wanted to use an app for tracking what you eat each day, but found all the ava
 - **Recipes** — save recipe templates with ingredient notes; quick-fill new entries from a recipe dropdown
 - **Edit & delete** — tap to edit, delete button on every entry
 - **Sync** — synchronize your data with a self-hosted server on your LAN
+- **Reminders** — daily notifications per meal (Breakfast, Lunch, Dinner) via WorkManager
 - **Material You** — dynamic color theming that adapts to your wallpaper
 
 ## Tech stack
@@ -19,6 +20,7 @@ I wanted to use an app for tracking what you eat each day, but found all the ava
 - Kotlin, Jetpack Compose, Material 3
 - Navigation 3 (NavDisplay + entryProvider DSL)
 - Room (SQLite) with KSP for persistence
+- WorkManager for scheduled daily reminders
 - kotlinx.serialization for sync wire format
 - Go sync server with SQLite (ncruces/go-sqlite3, WASM-based, no CGO)
 - Manual DI via Application class + AndroidViewModel
@@ -47,6 +49,7 @@ See [`sync-engine/README.md`](sync-engine/README.md) for full setup, configurati
 | Edit Entry | Edit an existing entry or delete it |
 | Timeline | All entries across all days, grouped by date then meal type |
 | Recipes | Manage recipe templates (name + ingredient notes) |
+| Reminders | Configure daily notification reminders per meal type |
 | Settings | Server URL, sync button, last sync time |
 
 ## Local development
