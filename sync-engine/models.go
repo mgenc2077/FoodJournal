@@ -20,16 +20,28 @@ type Recipe struct {
 	DeletedAt *int64  `json:"deleted_at"`
 }
 
+type CookingPlan struct {
+	ID        string  `json:"id"`
+	EpochDay  int64   `json:"epoch_day"`
+	Name      string  `json:"name"`
+	Notes     *string `json:"notes"`
+	CreatedAt int64   `json:"created_at"`
+	UpdatedAt int64   `json:"updated_at"`
+	DeletedAt *int64  `json:"deleted_at"`
+}
+
 type SyncRequest struct {
-	LastSyncAt int64       `json:"last_sync_at"`
-	Entries    []FoodEntry `json:"entries"`
-	Recipes    []Recipe    `json:"recipes"`
+	LastSyncAt    int64         `json:"last_sync_at"`
+	Entries       []FoodEntry   `json:"entries"`
+	Recipes       []Recipe      `json:"recipes"`
+	CookingPlans  []CookingPlan `json:"cooking_plans"`
 }
 
 type SyncResponse struct {
-	SyncedAt int64       `json:"synced_at"`
-	Entries  []FoodEntry `json:"entries"`
-	Recipes  []Recipe    `json:"recipes"`
+	SyncedAt     int64         `json:"synced_at"`
+	Entries      []FoodEntry   `json:"entries"`
+	Recipes      []Recipe      `json:"recipes"`
+	CookingPlans []CookingPlan `json:"cooking_plans"`
 }
 
 type RebuildResponse struct {

@@ -48,7 +48,7 @@ func (a *app) handleSync(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	slog.Debug("sync payload", "last_sync_at", req.LastSyncAt, "entries", len(req.Entries), "recipes", len(req.Recipes))
+	slog.Debug("sync payload", "last_sync_at", req.LastSyncAt, "entries", len(req.Entries), "recipes", len(req.Recipes), "cooking_plans", len(req.CookingPlans))
 
 	for _, e := range req.Entries {
 		if err := upsertEntry(db, e); err != nil {
@@ -58,6 +58,11 @@ func (a *app) handleSync(w http.ResponseWriter, r *http.Request) {
 	for _, rc := range req.Recipes {
 		if err := upsertRecipe(db, rc); err != nil {
 			slog.Error("upsert recipe failed", "id", rc.ID, "error", err)
+		}
+	}
+	for _, cp := range req.CookingPlans {
+		if err := upsertCookingPlan(db, cp); err != nil {
+			slog.Error("upsert cooking plan failed", "id", cp.ID, "error", err)
 		}
 	}
 
@@ -73,15 +78,22 @@ func (a *app) handleSync(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusInternalServerError, ErrorResponse{Message: "database error"})
 		return
 	}
+	cookingPlans, err := getCookingPlansSince(db, req.LastSyncAt)
+	if err != nil {
+		slog.Error("get cooking plans since failed", "since", req.LastSyncAt, "error", err)
+		writeJSON(w, http.StatusInternalServerError, ErrorResponse{Message: "database error"})
+		return
+	}
 
 	syncedAt := nowMs()
 	markInitialized(db)
-	slog.Info("sync completed", "synced_at", syncedAt, "entries_returned", len(entries), "recipes_returned", len(recipes))
+	slog.Info("sync completed", "synced_at", syncedAt, "entries_returned", len(entries), "recipes_returned", len(recipes), "cooking_plans_returned", len(cookingPlans))
 
 	writeJSON(w, http.StatusOK, SyncResponse{
-		SyncedAt: syncedAt,
-		Entries:  entries,
-		Recipes:  recipes,
+		SyncedAt:     syncedAt,
+		Entries:      entries,
+		Recipes:      recipes,
+		CookingPlans: cookingPlans,
 	})
 }
 

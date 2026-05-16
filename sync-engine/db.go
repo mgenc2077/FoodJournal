@@ -31,6 +31,16 @@ CREATE TABLE IF NOT EXISTS recipes (
     deletedAt INTEGER
 );
 
+CREATE TABLE IF NOT EXISTS cooking_plans (
+    id TEXT PRIMARY KEY,
+    epochDay INTEGER NOT NULL,
+    name TEXT NOT NULL,
+    notes TEXT,
+    createdAt INTEGER NOT NULL,
+    updatedAt INTEGER NOT NULL,
+    deletedAt INTEGER
+);
+
 CREATE TABLE IF NOT EXISTS sync_meta (
     key TEXT PRIMARY KEY,
     value TEXT NOT NULL
@@ -216,6 +226,55 @@ func getRecipesSince(db *sql.DB, since int64) ([]Recipe, error) {
 			return nil, err
 		}
 		result = append(result, r)
+	}
+	return result, rows.Err()
+}
+
+func upsertCookingPlan(db *sql.DB, p CookingPlan) error {
+	existing, err := getCookingPlan(db, p.ID)
+	if err != nil {
+		return err
+	}
+	if existing != nil && existing.UpdatedAt >= p.UpdatedAt {
+		slog.Debug("skipping cooking plan, server is newer or equal", "id", p.ID, "server_updated", existing.UpdatedAt, "client_updated", p.UpdatedAt)
+		return nil
+	}
+	_, err = db.Exec(`INSERT OR REPLACE INTO cooking_plans
+		(id, epochDay, name, notes, createdAt, updatedAt, deletedAt)
+		VALUES (?, ?, ?, ?, ?, ?, ?)`,
+		p.ID, p.EpochDay, p.Name, p.Notes, p.CreatedAt, p.UpdatedAt, p.DeletedAt)
+	if err != nil {
+		return err
+	}
+	slog.Debug("upserted cooking plan", "id", p.ID, "name", p.Name, "updatedAt", p.UpdatedAt, "deleted", p.DeletedAt != nil)
+	return nil
+}
+
+func getCookingPlan(db *sql.DB, id string) (*CookingPlan, error) {
+	row := db.QueryRow(`SELECT id, epochDay, name, notes, createdAt, updatedAt, deletedAt FROM cooking_plans WHERE id = ?`, id)
+	var p CookingPlan
+	if err := row.Scan(&p.ID, &p.EpochDay, &p.Name, &p.Notes, &p.CreatedAt, &p.UpdatedAt, &p.DeletedAt); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &p, nil
+}
+
+func getCookingPlansSince(db *sql.DB, since int64) ([]CookingPlan, error) {
+	result := make([]CookingPlan, 0)
+	rows, err := db.Query(`SELECT id, epochDay, name, notes, createdAt, updatedAt, deletedAt FROM cooking_plans WHERE updatedAt > ? ORDER BY updatedAt`, since)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var p CookingPlan
+		if err := rows.Scan(&p.ID, &p.EpochDay, &p.Name, &p.Notes, &p.CreatedAt, &p.UpdatedAt, &p.DeletedAt); err != nil {
+			return nil, err
+		}
+		result = append(result, p)
 	}
 	return result, rows.Err()
 }
