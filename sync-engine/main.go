@@ -24,7 +24,7 @@ func main() {
 	flag.Parse()
 
 	logLevel := slog.LevelInfo
-	if *verbose {
+	if *verbose || os.Getenv("LOG_LEVEL") == "debug" {
 		logLevel = slog.LevelDebug
 	}
 	slog.SetDefault(slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: logLevel})))
@@ -58,7 +58,7 @@ func main() {
 		}
 	}()
 
-	slog.Info("sync-engine listening", "port", port, "db", dbPath, "debug", *verbose)
+	slog.Info("sync-engine listening", "port", port, "db", dbPath, "log_level", logLevel)
 	if err := server.ListenAndServe(); err != http.ErrServerClosed {
 		slog.Error("server error", "error", err)
 		os.Exit(1)
