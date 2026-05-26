@@ -2,6 +2,9 @@
 
 I wanted to use an app for tracking what you eat each day, but found all the available apps too complex, so I made my own.
 
+<img src="docs/screenshots/main_view.jpg" width="32%"> <img src="docs/screenshots/menu_view.jpg" width="32%"> <img src="docs/screenshots/timeline_view.jpg" width="32%">
+<img src="docs/screenshots/reminders_view.jpg" width="32%"> <img src="docs/screenshots/cookingCalendar_view.jpg" width="32%"> <img src="docs/screenshots/sync_view.jpg" width="32%">
+
 ## Features
 
 - **Daily journal** — view and manage entries for any day with prev/next navigation
